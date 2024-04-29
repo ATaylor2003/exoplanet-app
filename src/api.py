@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 def convert_none(value):
     """
     Helper Function that converts 'None' values to an empty string. This is to prevent None type errors.
+    This may be uneccessary for this api, and may be removed if no use case is found.
 
     Args:
     - value: The value to be converted.
@@ -35,6 +36,7 @@ def convert_none(value):
 def convert_redis_data(redis_data):
     """
     Helper function to convert Redis hash data to a dictionary of strings.
+    May be uneccessary for this, can be removed if not used
     """
     converted_data = {}
     for key, value in redis_data.items():
@@ -53,8 +55,10 @@ def modify_database():
 
     A GET request will return all the data currently stored in the redis database.
 
+    The below url contains table data:
+    https://exoplanetarchive.ipac.caltech.edu/docs/API_PS_columns.html#addtldata
+
     returns:
-        all_data (list): A list of dictionaries containing the gene data from the HGNC api if the user performs a GET request.
         message (str): A message response if the user performs a POST or DELETE request.
     """
 
@@ -73,9 +77,9 @@ def modify_database():
         #print("Stuff is happening!")
         if isinstance(data, list):  # Expecting a list of dictionaries
             for item in data:
-                tic_id = item.get('pl_name')  # Assuming 'pl_name' is the identifier; adjust if necessary
-                if tic_id:
-                    rd.set(tic_id, json.dumps(item))
+                planet_id = item.get('pl_name')  # Assuming 'pl_name' is the identifier; adjust if necessary
+                if planet_id:
+                    rd.set(planet_id, json.dumps(item))
             return f"{len(data)} records saved in Redis.", 200
         else:
             return "Invalid JSON format: List of dictionaries expected", 400
@@ -96,10 +100,10 @@ def modify_database():
 @app.route('/planets', methods = ['GET'])
 def return_all_planet_ids():
     """
-    This function simply returns all exoplanet TIC ids that were stored as keys in the redis database.
+    This function returns all exoplanet IDs that were stored as keys in the redis database.
 
     returns:
-        list[str]: a list of all TIC ids in string format
+        list[str]: a list of all explanet IDs in string format
     """
     keys = rd.keys()
 
@@ -108,13 +112,14 @@ def return_all_planet_ids():
 
     return keys
 
+#Currently spaces must be interpreted as %20 ie K2-374%20c
 @app.route('/planets/<planet_id>', methods = ['GET'])
-def return_gene_data(gene_id: str):
+def return_planet_data(planet_id: str):
     """
-    This function returns all the data associated with a given TIC id. If the id doesn't exist, return an empty dictionary
+    This function returns all the data associated with a given planet name id. If the name doesn't exist, return an empty dictionary
 
     args:
-        gene_id (str): The string representing the id of the planet to search for.
+        planet_id (str): The string representing the id of the planet to search for.
 
     returns:
         (dict): A dictionary containing the data associated with the given id.
@@ -125,10 +130,10 @@ def return_gene_data(gene_id: str):
         all_keys[i] = all_keys[i].decode('utf-8')
 
     for item in all_keys:
-        if item == gene_id:
+        if item == planet_id:
             return json.loads(rd.get(item))
 
-    logging.error("ID not found. Use the '/planets' route for a list of valid genes stored in the database.\n")
+    logging.error("ID not found. Use the '/planets' route for a list of valid exoplanets stored in the database.\n")
     return {}
 
 @app.route('/jobs', methods = ['GET', 'POST'])
