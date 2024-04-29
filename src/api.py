@@ -43,6 +43,111 @@ def convert_redis_data(redis_data):
         converted_data[key.decode()] = value.decode()
     return converted_data
 
+# Define a dictionary mapping routes to their descriptions and additional details
+route_details = {
+    "/data": {
+        "description": "Modify the Redis database based on request type.",
+        "methods": ["POST", "DELETE", "GET"],
+        "usage": {
+            "POST": {
+                "description": "Add data to the Redis database.",
+                "parameters": {
+                    "data": "The data to be added."
+                },
+                "example": "/data (POST) -d 'data_content'"
+            },
+            "DELETE": {
+                "description": "Clear all data in the Redis database.",
+                "parameters": {},
+                "example": "/data (DELETE)"
+            },
+            "GET": {
+                "description": "Retrieve all data from the Redis database.",
+                "parameters": {},
+                "example": "/data (GET)"
+            }
+        }
+    },
+    "/planets": {
+        "description": "Retrieve a list of all exoplanet IDs stored in the Redis database.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve a list of exoplanet IDs.",
+                "parameters": {},
+                "example": "/planets (GET)"
+            }
+        }
+    },
+    "/planets/<planet_id>": {
+        "description": "Retrieve data associated with a specific exoplanet ID.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve data for a specific exoplanet ID.",
+                "parameters": {
+                    "planet_id": "The ID of the exoplanet."
+                },
+                "example": "/planets/12345 (GET)"
+            }
+        }
+    },
+    "/jobs": {
+        "description": "Submit new jobs for data plotting or retrieve a list of all created jobs.",
+        "methods": ["POST", "GET"],
+        "usage": {
+            "POST": {
+                "description": "Submit a new job for data plotting.",
+                "parameters": {
+                    "data": "The data to be plotted."
+                },
+                "example": "/jobs (POST) -d 'plot_data'"
+            },
+            "GET": {
+                "description": "Retrieve a list of all created jobs.",
+                "parameters": {},
+                "example": "/jobs (GET)"
+            }
+        }
+    },
+    "/jobs/<job_id>": {
+        "description": "Retrieve details about a specific job based on its ID.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve details for a specific job.",
+                "parameters": {
+                    "job_id": "The ID of the job."
+                },
+                "example": "/jobs/54321 (GET)"
+            }
+        }
+    },
+    "/results/<job_id>": {
+        "description": "Retrieve the resulting plot associated with a specific job ID.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve the plot result for a specific job.",
+                "parameters": {
+                    "job_id": "The ID of the job."
+                },
+                "example": "/results/54321 (GET)"
+            }
+        }
+    }
+}
+
+@app.route('/help', methods=['GET'])
+def help():
+    """
+    Return descriptions and usage details of all available routes.
+
+    Returns:
+        dict: A dictionary containing route descriptions and usage details.
+    """
+    return jsonify(route_details), 200
+
 @app.route('/data', methods = ['GET', 'POST', 'DELETE'])
 def modify_database():
     """
@@ -94,8 +199,30 @@ def modify_database():
         return f"Deleted {keys_deleted} records from Redis.", 200
     
     elif request.method == 'GET':
+    """
+    Retrieve data from the Redis database based on query parameters.
+
+    Query Parameters:
+        - limit (int, optional): Limit the number of records returned.
+        - planet_name (str, optional): Filter records by planet name.
+
+    Returns:
+        list: A list of data records matching the query criteria.
+    """
+        limit = request.args.get('limit', default=None, type=int)
+        planet_name = request.args.get('planet_name', default=None, type=str)
+
         all_data = [json.loads(rd.get(key)) for key in rd.keys('*')]
-        return jsonify(all_data), 200
+
+        if planet_name:
+            filtered_data = [record for record in all_data if record.get('pl_name') == planet_name]
+        else:
+            filtered_data = all_data
+
+        if limit:
+            filtered_data = filtered_data[:limit]
+
+        return jsonify(filtered_data), 200
     
 @app.route('/planets', methods = ['GET'])
 def return_all_planet_ids():
@@ -111,6 +238,56 @@ def return_all_planet_ids():
         keys[i] = keys[i].decode('utf-8')
 
     return keys
+
+# Endpoint to filter exoplanets by criteria
+@app.route('/planets/filter', methods=['GET'])
+def filter_planets():
+    query_parameters = request.args
+
+    filtered_planets = exoplanets
+    for key, value in query_parameters.items():
+        filtered_planets = [planet for planet in filtered_planets if str(planet.get(key)) == value]
+
+    return jsonify(filtered_planets)
+
+# Endpoint to retrieve details of a specific exoplanet by ID
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    planet = next((planet for planet in exoplanets if planet['id'] == planet_id), None)
+    if planet:
+        return jsonify(planet)
+    else:
+        return jsonify({'message': 'Planet not found'}), 404
+
+# Endpoint to search exoplanets by name
+@app.route('/planets/search', methods=['GET'])
+def search_planets():
+    name = request.args.get('name')
+    if name:
+        filtered_planets = [planet for planet in exoplanets if name.lower() in planet['pl_name'].lower()]
+        return jsonify(filtered_planets)
+    else:
+        return jsonify({'message': 'Search term "name" is required'}), 400
+
+# Endpoint to retrieve details of a specific star by ID
+@app.route('/stars/<int:star_id>', methods=['GET'])
+def get_star(star_id):
+    # Assuming star data is linked to exoplanet data
+    star = {'message': 'Star information not implemented yet'}
+    return jsonify(star), 501
+
+# Endpoint for advanced filtering (POST request)
+@app.route('/planets/advanced-filter', methods=['POST'])
+def advanced_filter_planets():
+    filters = request.get_json()
+    if filters:
+        filtered_planets = exoplanets
+        for key, value in filters['filters'].items():
+            filtered_planets = [planet for planet in filtered_planets if str(planet.get(key)) == str(value)]
+
+        return jsonify(filtered_planets)
+    else:
+        return jsonify({'message': 'Invalid request body'}), 400
 
 #Currently spaces must be interpreted as %20 ie K2-374%20c
 @app.route('/planets/<planet_id>', methods = ['GET'])
@@ -135,6 +312,23 @@ def return_planet_data(planet_id: str):
 
     logging.error("ID not found. Use the '/planets' route for a list of valid exoplanets stored in the database.\n")
     return {}
+
+@app.route('/planets/type/<planet_type>', methods=['GET'])
+def get_planets_by_type(planet_type):
+    """
+    Retrieve planets from the Redis database based on planet type.
+
+    Args:
+        planet_type (str): The type of planet (e.g., 'terrestrial', 'gas giant').
+
+    Returns:
+        list: A list of planets matching the specified type.
+    """
+    all_data = [json.loads(rd.get(key)) for key in rd.keys('*')]
+    filtered_data = [record for record in all_data if record.get('pl_type') == planet_type]
+
+    return jsonify(filtered_data), 200
+
 
 @app.route('/jobs', methods = ['GET', 'POST'])
 def submit_jobs():
