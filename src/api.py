@@ -1,15 +1,16 @@
 import redis
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
 import logging
 import requests
 import os
 import csv
+import urllib.parse
 from jobs import add_job, get_job_by_id, rd, jdb, res
 
 app = Flask(__name__)
 
-# Configure logging (Prevents any errors in the event if a LOG-LEVEL typo in docker-compose
+# Configure logging (Prevents any errors in the event of a LOG-LEVEL typo in docker-compose
 log_level = os.environ.get('LOG_LEVEL')
 if log_level == 'ERROR':
     logging.basicConfig(level=logging.ERROR)
@@ -58,44 +59,39 @@ def modify_database():
     """
 
     if request.method == 'POST':
-        
-        response = requests.get('')
+        base_url = 'https://exoplanetarchive.ipac.caltech.edu/TAP/sync'
+        query = 'select * from ps'
+        encoded_query = urllib.parse.quote_plus(query)
+        url = f"{base_url}?query={encoded_query}&format=json"
+        response = requests.get(url)
+        print("URL Requested:", url)
         if response.status_code != 200:
             print("Failed to fetch data from the URL.\n")
-            return
+            return "Failed to fetch data", 502
         
-        data = response.content.decode('utf-8')
-        planets = []
-
-        with open('all_data', 'r') as data:
-            reader = csv.DictReader(data)
-            for row in reader:
-                planets.append(dict(row))
-
-            for item in planets:
-                rd.set(item['tic_id'], json.dumps(item))
-
-            logging.debug("Number of keys in redis database: " + str(len(rd.keys())) + "\n")
-
-            return "Data saved in redis database!\n" 
+        data = response.json()
+        #print("Stuff is happening!")
+        if isinstance(data, list):  # Expecting a list of dictionaries
+            for item in data:
+                tic_id = item.get('pl_name')  # Assuming 'pl_name' is the identifier; adjust if necessary
+                if tic_id:
+                    rd.set(tic_id, json.dumps(item))
+            return f"{len(data)} records saved in Redis.", 200
+        else:
+            return "Invalid JSON format: List of dictionaries expected", 400
+        
     
-    if request.method == 'DELETE':
-        all_keys = rd.keys()
-
-        for item in all_keys:
-            rd.delete(item)
-        logging.debug("Number of keys in redis database: " + str(len(rd.keys())) + "\n")
-
-        return "Database cleared!\n"
-
-    if request.method == 'GET':
-        all_data = []
-        all_keys = rd.keys()
-
-        for item in all_keys:
-            all_data.append(json.loads(rd.get(item)))
-
-        return all_data
+    elif request.method == 'DELETE':
+        keys_deleted = 0
+        for key in rd.keys('*'):
+            rd.delete(key)
+            keys_deleted += 1
+        
+        return f"Deleted {keys_deleted} records from Redis.", 200
+    
+    elif request.method == 'GET':
+        all_data = [json.loads(rd.get(key)) for key in rd.keys('*')]
+        return jsonify(all_data), 200
     
 @app.route('/planets', methods = ['GET'])
 def return_all_planet_ids():
