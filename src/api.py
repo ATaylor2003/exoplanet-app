@@ -20,19 +20,6 @@ else:
     logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger(__name__)
 
-def convert_none(value):
-    """
-    Helper Function that converts 'None' values to an empty string. This is to prevent None type errors.
-    This may be uneccessary for this api, and may be removed if no use case is found.
-
-    Args:
-    - value: The value to be converted.
-
-    Returns:
-    - Converted value. If 'value' is None, returns an empty string.
-    """
-    return value if value is not None else ''
-
 def convert_redis_data(redis_data):
     """
     Helper function to convert Redis hash data to a dictionary of strings.
@@ -269,12 +256,63 @@ def search_planets():
     else:
         return jsonify({'message': 'Search term "name" is required'}), 400
 
-# Endpoint to retrieve details of a specific star by ID
-@app.route('/stars/<int:star_id>', methods=['GET'])
-def get_star(star_id):
-    # Assuming star data is linked to exoplanet data
-    star = {'message': 'Star information not implemented yet'}
-    return jsonify(star), 501
+@app.route('/stars', methods=['GET'])
+def list_unique_stars():
+    """
+    Return a list of all unique star 'hostname' values stored in the Redis database.
+
+    Returns:
+        json: A JSON object containing a list of unique 'hostname' values, or an error message.
+    """
+    try:
+        all_keys = rd.keys()  # Retrieve all keys from Redis
+        hostnames = set()  # A set to store unique hostnames
+        
+        for key in all_keys:
+            star_data = json.loads(rd.get(key).decode('utf-8'))  # Decode and load data for each key
+            hostname = star_data.get('hostname')
+            if hostname:
+                hostnames.add(hostname)  # Add the hostname to the set if it's not None
+
+        return jsonify({'List of stars present in database': list(hostnames)}), 200  # Return the list of unique hostnames
+
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
+
+
+
+# Endpoint to retrieve exoplanets orbiting a specific star by ID
+@app.route('/stars/<star_id>', methods=['GET'])
+def get_star(star_id: str):
+    """
+    Retrieve all keys where the 'hostname' in their associated data matches the given star_id.
+
+    Args:
+        star_id (str): The hostname ID of the star to search for in Redis.
+
+    Returns:
+        json: A list of exoplanet keys that have data with the specified 'hostname', or an error message.
+    """
+    try:
+        all_keys = rd.keys()  # Retrieve all keys from Redis
+        matching_keys = []  # List to store keys that match the 'hostname'
+        
+        for key in all_keys:
+            star_data = json.loads(rd.get(key).decode('utf-8'))  # Decode and load data for each key
+            if star_data.get('hostname') == star_id:  # Check if the 'hostname' matches the star_id
+                matching_keys.append(key.decode('utf-8'))  # Add the key to the list if it matches
+
+        if matching_keys:
+            return jsonify({('Exoplanets orbiting ' + star_id): matching_keys}), 200  # Return the list of matching keys
+        else:
+            # If no matching 'hostname' is found after checking all keys
+            logging.error("Star ID not found. Use the '/planets' route for a list of valid exoplanets stored in the database.")
+            return jsonify({'message': 'Star not found'}), 404
+
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
 
 # Endpoint for advanced filtering (POST request)
 @app.route('/planets/advanced-filter', methods=['POST'])
