@@ -238,7 +238,7 @@ def filter_planets():
     return jsonify(filtered_planets)
 
 # Endpoint to retrieve details of a specific exoplanet by ID
-@app.route('/planets/<int:planet_id>', methods=['GET']) # Would this route be redundant?
+@app.route('/planets/<int:planet_id>', methods=['GET']) # Would this route be redundant? It would I think, I would repurpose or remove
 def get_planet(planet_id):
     planet = next((planet for planet in exoplanets if planet['id'] == planet_id), None) # Routes containing the variable 'exoplanets' gave an error since it wasn't defined
     if planet:
@@ -279,8 +279,6 @@ def list_unique_stars():
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
-
-
 
 # Endpoint to retrieve exoplanets orbiting a specific star by ID
 @app.route('/stars/<star_id>', methods=['GET'])
@@ -351,6 +349,7 @@ def return_planet_data(planet_id: str):
     logging.error("ID not found. Use the '/planets' route for a list of valid exoplanets stored in the database.\n")
     return {}
 
+#There is little data in the tables regarding this, I don't think this will be useful
 @app.route('/planets/type/<planet_type>', methods=['GET'])
 def get_planets_by_type(planet_type):
     """
