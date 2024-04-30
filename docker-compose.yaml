@@ -17,7 +17,7 @@ services:
             dockerfile: ./Dockerfile
         depends_on:
             - redis-db
-        image: username/gene_api:1.0
+        image: username/planet_api:1.0
         ports:
             - 5000:5000
         volumes:
@@ -34,7 +34,7 @@ services:
             dockerfile: ./Dockerfile
         depends_on:
             - redis-db
-        image: username/gene_worker:1.0
+        image: username/planet_worker:1.0
         environment:
             REDIS_IP: "redis-db"
             REDIS_PORT: "6379"

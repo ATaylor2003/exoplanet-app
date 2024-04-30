@@ -199,16 +199,16 @@ def modify_database():
         return f"Deleted {keys_deleted} records from Redis.", 200
     
     elif request.method == 'GET':
-    """
-    Retrieve data from the Redis database based on query parameters.
+        """
+        Retrieve data from the Redis database based on query parameters.
 
-    Query Parameters:
-        - limit (int, optional): Limit the number of records returned.
-        - planet_name (str, optional): Filter records by planet name.
+        Query Parameters:
+            - limit (int, optional): Limit the number of records returned.
+            - planet_name (str, optional): Filter records by planet name.
 
-    Returns:
-        list: A list of data records matching the query criteria.
-    """
+        Returns:
+            list: A list of data records matching the query criteria.
+        """
         limit = request.args.get('limit', default=None, type=int)
         planet_name = request.args.get('planet_name', default=None, type=str)
 
@@ -251,9 +251,9 @@ def filter_planets():
     return jsonify(filtered_planets)
 
 # Endpoint to retrieve details of a specific exoplanet by ID
-@app.route('/planets/<int:planet_id>', methods=['GET'])
+@app.route('/planets/<int:planet_id>', methods=['GET']) # Would this route be redundant?
 def get_planet(planet_id):
-    planet = next((planet for planet in exoplanets if planet['id'] == planet_id), None)
+    planet = next((planet for planet in exoplanets if planet['id'] == planet_id), None) # Routes containing the variable 'exoplanets' gave an error since it wasn't defined
     if planet:
         return jsonify(planet)
     else:
@@ -335,7 +335,7 @@ def submit_jobs():
     """
     Depending on the type of request, create a new job or list the jobs that have been created.
 
-    A POST request along with a dictionary containing a 'start_date' and 'end_date' key will create a new job.
+    A POST request along with a dictionary containing a 'start_date', 'end_date', and an optional 'organize_by' key will create a new job.
     If the dictionary is not passed correctly, return a message. Worker scripts will then create histograms for the jobs.
 
     A GET request will list all the jobs that have been created
@@ -348,8 +348,29 @@ def submit_jobs():
 
     if request.method == 'POST':
         data = request.get_json()
-        
-        job_dict = add_job()
+        valid_plot_options = ['Mass', 'Radius', 'Orbit_Period']
+
+        try:
+            limit = int(data['start_date'])
+        except KeyError or ValueError:
+            logging.error("Error creating job: a 'start_date' parameter must exist and it must be an integer.\n")
+            return {}
+        try:
+            offset = int(data['end_date'])
+        except KeyError or ValueError:
+            logging.error("Error creating job: an 'end_date' parameter must exist and it must be an integer.\n")
+            return {}
+
+        try:
+            if data['organize_by'] in valid_plot_options:
+                job_dict = add_job(data['start_date'], data['end_date'], data['organize_by'])
+            else:
+                logging.error("Error creating job: Valid organizations are 'Radius', 'Mass', and 'Orbit_Period'\n")
+                return{}
+        except KeyError:
+            # If the route is passed with only years, organize by years
+            job_dict = add_job(data['start_date'], data['end_date'])
+
         return job_dict
 
     if request.method == 'GET':

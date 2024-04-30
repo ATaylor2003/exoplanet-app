@@ -17,8 +17,8 @@ def _generate_jid():
     Generate a pseudo-random identifier for a job.
     """
     return str(uuid.uuid4())
-'''
-def _instantiate_job(jid: str, status: str, start_date: int, end_date: int):
+
+def _instantiate_job(jid: str, status: str, start_date: int, end_date: int, organize_by: str):
     """
     Create the job object description as a python dictionary. Requires the job id,
     status, limit and offset parameters.
@@ -26,8 +26,9 @@ def _instantiate_job(jid: str, status: str, start_date: int, end_date: int):
     return {'id': jid,
             'status': status,
             'start_date': start_date,
-            'end_date': end_date }
-'''
+            'end_date': end_date,
+            'organize_by': organize_by}
+
 def _save_job(jid: str, job_dict: dict):
     """Save a job object in the Redis database."""
     jdb.set(jid, json.dumps(job_dict))
@@ -37,15 +38,15 @@ def _queue_job(jid: str):
     """Add a job to the redis queue."""
     q.put(jid)
     return
-'''
-def add_job(start_date: int, end_date: int, status="submitted"):
+
+def add_job(start_date: int, end_date: int, organize_by="None", status="submitted"):
     """Add a job to the redis queue."""
     jid = _generate_jid()
-    job_dict = _instantiate_job(jid, status, start_date, end_date)
+    job_dict = _instantiate_job(jid, status, start_date, end_date, organize_by)
     _save_job(jid, job_dict)
     _queue_job(jid)
     return job_dict
-'''
+
 def get_job_by_id(jid: str):
     """Return job dictionary given jid"""
     if jdb.get(jid) is None:
