@@ -78,6 +78,52 @@ route_details = {
                 "example": "/planets/12345 (GET)"
             }
         }
+    }, # Unsure of usage for /filter and /search since they are not functioning currently
+    "/planets/filter": {
+        "description": "Retrieve and filter data based on criteria.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Filter data based on criteria.",
+                "parameters": {},
+                "example": ""
+            }
+        }
+    },
+    "/planets/search": {
+        "description": "Search and retrieve data for exoplanets based on the name given in the search.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Search and retrieve data for specific exoplanets.",
+                "parameters": {},
+                "example": ""
+            }
+        }
+    }, 
+    "/stars": {
+        "description": "Retrieve a list of all stars associated with exoplanets.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve a list of star names.",
+                "parameters": {},
+                "example": "/stars (GET)"
+            }
+        }
+    },
+    "/stars/<star_id>": {
+        "description": "Retrieve a list of exoplanets associated with a specific star.",
+        "methods": ["GET"],
+        "usage": {
+            "GET": {
+                "description": "Retrieve a list of planets for a specific star.",
+                "parameters": {
+                    "star_id": "The name of the star."
+                },
+                "example": "/stars/Star1 (GET)"
+            }
+        }
     },
     "/jobs": {
         "description": "Submit new jobs for data plotting or retrieve a list of all created jobs.",
@@ -111,7 +157,7 @@ route_details = {
         }
     },
     "/results/<job_id>": {
-        "description": "Retrieve the resulting plot associated with a specific job ID.",
+        "description": "Retrieve and download the resulting plot associated with a specific job ID.",
         "methods": ["GET"],
         "usage": {
             "GET": {
@@ -231,27 +277,18 @@ def return_all_planet_ids():
 def filter_planets():
     query_parameters = request.args
 
-    filtered_planets = exoplanets
+    filtered_planets = exoplanets # Gives an error: exoplanets is not defined
     for key, value in query_parameters.items():
         filtered_planets = [planet for planet in filtered_planets if str(planet.get(key)) == value]
 
     return jsonify(filtered_planets)
-
-# Endpoint to retrieve details of a specific exoplanet by ID
-@app.route('/planets/<int:planet_id>', methods=['GET']) # Would this route be redundant? It would I think, I would repurpose or remove
-def get_planet(planet_id):
-    planet = next((planet for planet in exoplanets if planet['id'] == planet_id), None) # Routes containing the variable 'exoplanets' gave an error since it wasn't defined
-    if planet:
-        return jsonify(planet)
-    else:
-        return jsonify({'message': 'Planet not found'}), 404
 
 # Endpoint to search exoplanets by name
 @app.route('/planets/search', methods=['GET'])
 def search_planets():
     name = request.args.get('name')
     if name:
-        filtered_planets = [planet for planet in exoplanets if name.lower() in planet['pl_name'].lower()]
+        filtered_planets = [planet for planet in exoplanets if name.lower() in planet['pl_name'].lower()] # This line gives an error as well
         return jsonify(filtered_planets)
     else:
         return jsonify({'message': 'Search term "name" is required'}), 400
@@ -348,23 +385,6 @@ def return_planet_data(planet_id: str):
 
     logging.error("ID not found. Use the '/planets' route for a list of valid exoplanets stored in the database.\n")
     return {}
-
-#There is little data in the tables regarding this, I don't think this will be useful
-@app.route('/planets/type/<planet_type>', methods=['GET'])
-def get_planets_by_type(planet_type):
-    """
-    Retrieve planets from the Redis database based on planet type.
-
-    Args:
-        planet_type (str): The type of planet (e.g., 'terrestrial', 'gas giant').
-
-    Returns:
-        list: A list of planets matching the specified type.
-    """
-    all_data = [json.loads(rd.get(key)) for key in rd.keys('*')]
-    filtered_data = [record for record in all_data if record.get('pl_type') == planet_type]
-
-    return jsonify(filtered_data), 200
 
 
 @app.route('/jobs', methods = ['GET', 'POST'])

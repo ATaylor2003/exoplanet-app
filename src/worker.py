@@ -2,20 +2,21 @@ from jobs import get_job_by_id, update_job_status, q, rd, res
 import json
 import logging
 import matplotlib.pyplot as plt
-
+'''
 ### Needs fixing
 @q.worker
-def update_job(job): # Gave an error if this argument wasn't there
+def update_job(job_id): # Gave an error if this argument wasn't there
     """
     Watch for new jobs and process them accordingly.
     """
     while True:
-        job_id = q.dequeue() # Says HotQueue has no attribute dequeue
+        #job_id = q.get()
         if job_id:
             process_job(job_id)
         else:
             break
-
+'''
+@q.worker
 def process_job(job_id: str):
     """
     Process a specific job by generating a histogram and storing the resulting image.
@@ -33,7 +34,7 @@ def process_job(job_id: str):
 
     if job_dict['organize_by'] == 'None':
         x_axis = 'disc_year'
-        x_title = 'year_discovered'
+        x_title = 'Year Discovered'
     elif job_dict['organize_by'] == 'Mass':
         x_axis = 'pl_masse'
         x_title = 'Mass of planet (Earth Masses)'
@@ -51,13 +52,17 @@ def process_job(job_id: str):
     for key in all_keys:
         planet = json.loads(rd.get(key))
         try:
-            values_to_plot.append(float(planet([x_axis])))
+            values_to_plot.append(float(planet[x_axis]))
         except ValueError:
             continue
 
-    plt.hist(values_to_plot, 20)
+    num_bins = 20
+    if x_axis == 'disc_year':
+        num_bins = max(values_to_plot) - min(values_to_plot) + 1
+
+    plt.hist(values_to_plot, num_bins)
     plt.xlabel(x_title)
-    plt.y_label('Frequency')
+    plt.ylabel('Frequency')
     plt.title('Histogram')
     plt.savefig(f'{job_id}_plot.png')
     plt.close
@@ -71,4 +76,5 @@ def process_job(job_id: str):
     logging.info(f"Job {job_id} completed successfully.")
 
 if __name__ == '__main__':
-    update_job()
+    #update_job()
+    process_job()
