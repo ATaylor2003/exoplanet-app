@@ -14,10 +14,11 @@ def process_job(job_id: str):
     update_job_status(job_id, 'in_progress')
     job_dict = get_job_by_id(job_id)
 
-    # Example: Generate a plot based on job instructions
-    # plot_type = job_dict.get('plot_type', 'default')
     values_to_plot = []
     all_keys = rd.keys()
+
+    start_date = int(job_dict['start_date'])
+    end_date = int(job_dict['end_date'])
 
     if job_dict['organize_by'] == 'None':
         x_axis = 'disc_year'
@@ -33,24 +34,25 @@ def process_job(job_id: str):
         x_title = 'Orbit Period (Earth Days)'
     else:
         update_job_status(job_id, 'failed')
-        logging.error(f"Unsupported plot type '{plot_type}' for job {job_id}.")
+        logging.error(f"Unsupported plot organization for job {job_id}.")
         return ''
 
     for key in all_keys:
         planet = json.loads(rd.get(key))
         try:
-            values_to_plot.append(float(planet[x_axis]))
-        except ValueError:
+            if ((int(planet['disc_year'])) >= start_date) and (int(planet['disc_year']) <= end_date):
+                values_to_plot.append(int(planet[x_axis]))
+        except TypeError:
             continue
 
     num_bins = 20
     if x_axis == 'disc_year':
-        num_bins = max(values_to_plot) - min(values_to_plot) + 1
-
+        num_bins = max((end_date - start_date), 1)
+    
     plt.hist(values_to_plot, num_bins)
     plt.xlabel(x_title)
-    plt.ylabel('Frequency')
-    plt.title('Histogram')
+    plt.ylabel('Number of Exoplanets')
+    plt.title(f'Summary of Planets Discovered Between {start_date} and {end_date}')
     plt.savefig(f'{job_id}_plot.png')
     plt.close
 
@@ -63,5 +65,4 @@ def process_job(job_id: str):
     logging.info(f"Job {job_id} completed successfully.")
 
 if __name__ == '__main__':
-    
     process_job()
