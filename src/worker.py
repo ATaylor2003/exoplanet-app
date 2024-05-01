@@ -2,20 +2,7 @@ from jobs import get_job_by_id, update_job_status, q, rd, res
 import json
 import logging
 import matplotlib.pyplot as plt
-'''
-### Needs fixing
-@q.worker
-def update_job(job_id): # Gave an error if this argument wasn't there
-    """
-    Watch for new jobs and process them accordingly.
-    """
-    while True:
-        #job_id = q.get()
-        if job_id:
-            process_job(job_id)
-        else:
-            break
-'''
+
 @q.worker
 def process_job(job_id: str):
     """
@@ -76,5 +63,5 @@ def process_job(job_id: str):
     logging.info(f"Job {job_id} completed successfully.")
 
 if __name__ == '__main__':
-    #update_job()
+    
     process_job()
