@@ -272,12 +272,15 @@ def return_all_planet_ids():
 
     return keys
 
-# Endpoint to filter exoplanets by criteria
 @app.route('/planets/filter', methods=['GET'])
 def filter_planets():
     query_parameters = request.args
 
-    filtered_planets = exoplanets # Gives an error: exoplanets is not defined
+    # Retrieve all exoplanet data from Redis (assuming 'rd' is your Redis connection)
+    keys = rd.keys()
+    exoplanets = [json.loads(rd.get(key)) for key in keys]
+
+    filtered_planets = exoplanets
     for key, value in query_parameters.items():
         filtered_planets = [planet for planet in filtered_planets if str(planet.get(key)) == value]
 
@@ -349,18 +352,30 @@ def get_star(star_id: str):
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
 
-# Endpoint for advanced filtering (POST request)
 @app.route('/planets/advanced-filter', methods=['POST'])
 def advanced_filter_planets():
-    filters = request.get_json()
-    if filters:
+    try:
+        filters = request.get_json()
+        if not filters or 'filters' not in filters:
+            return jsonify({'message': 'Invalid request body'}), 400
+        
+        filters = filters['filters']
+        
+        # Retrieve exoplanets data from Redis or another source
+        keys = rd.keys()
+        exoplanets = [json.loads(rd.get(key)) for key in keys]
+
+        # Apply filters to the exoplanets data
         filtered_planets = exoplanets
-        for key, value in filters['filters'].items():
+        for key, value in filters.items():
             filtered_planets = [planet for planet in filtered_planets if str(planet.get(key)) == str(value)]
 
-        return jsonify(filtered_planets)
-    else:
-        return jsonify({'message': 'Invalid request body'}), 400
+        return jsonify(filtered_planets), 200
+
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
+
 
 #Currently spaces must be interpreted as %20 ie K2-374%20c
 @app.route('/planets/<planet_id>', methods = ['GET'])
