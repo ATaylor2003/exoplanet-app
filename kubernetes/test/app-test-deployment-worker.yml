@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-worker-deployment
+  labels:
+    app: test-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-worker
+  template:
+    metadata:
+      labels:
+        app: test-worker
+    spec:
+      containers:
+        - name: flask-api-container
+	  imagePullPolicy: Always
+          image: <your-flask-api-image>:dev # Change line here once image is uploaded to Dockerhub
+          ports:
+          - containerPort: 5000
+	  volumeMounts:
+	  - name: test-redis-data-pvc
+	    mountPath: "/data"
+	  command: ['sh', '-c', 'python3 worker.py']
+      volumes:
+      - name: test-redis-data-pvc
+	persistentVolumeClaim:
+	  claimName: test-redis-data-pvc

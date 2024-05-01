@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: redis-data-pvc
+  name: test-redis-data-pvc
 spec:
   accessModes:
     - ReadWriteOnce

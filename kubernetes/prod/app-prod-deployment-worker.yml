@@ -2,18 +2,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-api-deployment
+  name: worker-deployment
   labels:
-    app: flask-api
+    app: worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flask-api
+      app: worker
   template:
     metadata:
       labels:
-        app: flask-api
+        app: worker
     spec:
       containers:
         - name: flask-api-container
@@ -24,7 +24,7 @@ spec:
 	  volumeMounts:
 	  - name: redis-data-pvc
 	    mountPath: "/data"
-	  command: ['sh', '-c', 'python3 flask-api.py']
+	  command: ['sh', '-c', 'python3 worker.py']
       volumes:
       - name: redis-data-pvc
 	persistentVolumeClaim:

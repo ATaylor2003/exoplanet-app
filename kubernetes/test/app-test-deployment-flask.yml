@@ -2,30 +2,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flask-api-deployment
+  name: test-flask-api-deployment
   labels:
-    app: flask-api
+    app: test-flask-api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: flask-api
+      app: test-flask-api
   template:
     metadata:
       labels:
-        app: flask-api
+        app: test-flask-api
     spec:
       containers:
         - name: flask-api-container
-	  imagePullPolicy: IfNotPresent
-          image: <your-docker-image>:1.0 # Change line here once image is COMPLETE and uploaded to Dockerhub
+	  imagePullPolicy: Always
+          image: <your-flask-api-image>:dev # Change line here once image is uploaded to Dockerhub
           ports:
           - containerPort: 5000
 	  volumeMounts:
-	  - name: redis-data-pvc
+	  - name: test-redis-data-pvc
 	    mountPath: "/data"
 	  command: ['sh', '-c', 'python3 flask-api.py']
       volumes:
-      - name: redis-data-pvc
+      - name: test-redis-data-pvc
 	persistentVolumeClaim:
-	  claimName: redis-data-pvc
+	  claimName: test-redis-data-pvc
