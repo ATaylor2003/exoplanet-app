@@ -26,7 +26,7 @@ services:
             REDIS_IP: "redis-db"
             REDIS_PORT: "6379"
             LOG_LEVEL: "WARNING"
-        command: ["python3", "api.py"]
+        command: ["python3", "flask_api.py"]
 
     worker:
         build:
