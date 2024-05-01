@@ -290,11 +290,22 @@ def filter_planets():
 @app.route('/planets/search', methods=['GET'])
 def search_planets():
     name = request.args.get('name')
-    if name:
-        filtered_planets = [planet for planet in exoplanets if name.lower() in planet['pl_name'].lower()] # This line gives an error as well
-        return jsonify(filtered_planets)
-    else:
+    if not name:
         return jsonify({'message': 'Search term "name" is required'}), 400
+
+    try:
+        # Retrieve all exoplanet data from Redis (assuming 'rd' is your Redis connection)
+        keys = rd.keys()
+        exoplanets = [json.loads(rd.get(key)) for key in keys]
+
+        # Filter exoplanets by name (case-insensitive)
+        filtered_planets = [planet for planet in exoplanets if planet.get('pl_name', '').lower() == name.lower()]
+
+        return jsonify(filtered_planets), 200
+    except Exception as e:
+        logging.error(f"An error occurred while searching for exoplanets: {str(e)}")
+        return jsonify({'message': 'Internal server error'}), 500
+
 
 @app.route('/stars', methods=['GET'])
 def list_unique_stars():
