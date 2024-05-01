@@ -272,6 +272,7 @@ def return_all_planet_ids():
 
     return keys
 
+# Endpoint to filter based on one of the keys of the datase, for example Discovery Facility -> Xinglong Station: curl -X GET "http://localhost:5000/planets/filter?disc_facility=Xinglong%20Station"
 @app.route('/planets/filter', methods=['GET'])
 def filter_planets():
     query_parameters = request.args
@@ -286,7 +287,7 @@ def filter_planets():
 
     return jsonify(filtered_planets)
 
-# Endpoint to search exoplanets by name
+# Endpoint to search exoplanets by name, for example name -> Kepler-1066 b: curl -X GET "127.0.0.1:5000/planets/search?name=Kepler-1066%20b"
 @app.route('/planets/search', methods=['GET'])
 def search_planets():
     name = request.args.get('name')
@@ -362,6 +363,17 @@ def get_star(star_id: str):
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'message': 'Internal server error'}), 500
+
+# Endpoint to filter based on more than one of the keys of the datase, for example hostname -> TOI-332 & Discovery Method -> Transit
+# curl -X POST \
+#  -H "Content-Type: application/json" \
+#  -d '{
+#        "filters": {
+#          "hostname": "TOI-332",
+#          "discoverymethod": "Transit"
+#        }
+#      }' \
+#  http://127.0.0.1:5000/planets/advanced-filter
 
 @app.route('/planets/advanced-filter', methods=['POST'])
 def advanced_filter_planets():
