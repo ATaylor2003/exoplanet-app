@@ -11,8 +11,8 @@ spec:
   - host: "exoplanets.coe332.tacc.cloud"
     http:
       paths:
-      - path: "/"
-        pathType: Prefix
+      - pathType: Prefix
+        path: "/"
         backend:
           service:
             name: test-flask-api-nodeport-service
