@@ -112,7 +112,7 @@ route_details = {
             "POST": {
                 "description": "Filter data based on multiple criteria.",
                 "parameters": {
-                    "{'filters': {'key1': 'value',...} "A json dictionary containing the keys to filter by and the values to search for"
+                    "{'filters': {'key1': 'value',...}": "A json dictionary containing the keys to filter by and the values to search for"
                 },
                 "example": "planets/advanced-filter' -d '{'filters': {'discoverymethod': 'Transit'}}' -H 'Content-Type: application/json'"
             }
