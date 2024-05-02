@@ -2,11 +2,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-    name: flask-api-nodeport-service
+  name: flask-api-nodeport-service
 spec:
-    type: NodePort
-    selector:
-        app: flask-api
-    ports:
-        - port: 5000
-          targetPort: 5000
+  type: NodePort
+  selector:
+    app: flask-api
+  ports:
+  - port: 5000
+    targetPort: 5000

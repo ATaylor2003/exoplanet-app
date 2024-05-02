@@ -5,8 +5,8 @@ metadata:
   name: redis-data-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+  - ReadWriteOnce
   storageClassName: cinder-csi
   resources:
     requests:
-      storage: 1Gi  # Adjust size as needed
+      storage: 1Gi

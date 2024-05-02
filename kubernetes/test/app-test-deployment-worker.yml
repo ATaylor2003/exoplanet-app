@@ -16,12 +16,18 @@ spec:
         app: test-worker
     spec:
       containers:
-      - name: flask-api-container
+      - name: test-worker
         imagePullPolicy: Always
-        image: lgonzalez883/planet_api:dev # Change line here once image is uploaded to Dockerhub
+        image: lgonzalez883/planet_api:dev
+        ports:
+        - name: http
+          containerPort: 6379
         volumeMounts:
         - name: test-redis-data-pvc
           mountPath: "/data"
+        env:
+        - name: REDIS_IP
+          value: "test-redis-service"
         command: ['sh', '-c', 'python3 worker.py']
       volumes:
       - name: test-redis-data-pvc

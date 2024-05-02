@@ -5,14 +5,15 @@ metadata:
   name: flask-api-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300s"
 spec:
   ingressClassName: nginx
   rules:
   - host: "exoplanets.coe332.tacc.cloud"
     http:
       paths:
-      - path: "/"
-        pathType: Prefix
+      - pathType: Prefix
+        path: "/"
         backend:
           service:
             name: flask-api-nodeport-service

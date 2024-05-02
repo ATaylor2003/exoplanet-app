@@ -23,11 +23,10 @@ def test_get_job_by_id():
 
 def test_update_job_status():
     test_dict = add_job(0, 0)
-    test_dict['status'] = 'testing'
+    assert test_dict['status'] == 'submitted'
     test_id = test_dict['id']
-
-    update_job_status(test_id, 'testing')
-    assert get_job_by_id(test_id) == test_dict
+    time.sleep(5)
+    assert get_job_by_id(test_id)['status'] == 'completed'
 
 
     with pytest.raises(Exception):

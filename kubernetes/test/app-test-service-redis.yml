@@ -4,13 +4,11 @@ kind: Service
 metadata:
   name: test-redis-service
 spec:
+  type: ClusterIP
   selector:
     app: redis-db
-    app: test-flask-api
-    app: test-worker
   ports:
   - name: redis-db
     protocol: TCP
     port: 6379
     targetPort: 6379
-  type: ClusterIP

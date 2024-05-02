@@ -17,7 +17,7 @@ services:
             dockerfile: ./Dockerfile
         depends_on:
             - redis-db
-        image: lgonzalez883/planet_api:dev
+        image: lgonzalez883/planet_api:1.0
         ports:
             - 5000:5000
         volumes:
@@ -34,7 +34,7 @@ services:
             dockerfile: ./Dockerfile
         depends_on:
             - redis-db
-        image: lgonzalez883/planet_api:dev
+        image: lgonzalez883/planet_api:1.0
         environment:
             REDIS_IP: "redis-db"
             REDIS_PORT: "6379"

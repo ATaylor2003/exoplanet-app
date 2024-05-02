@@ -1,5 +1,5 @@
 import redis
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import json
 import logging
 import requests
@@ -509,6 +509,8 @@ def get_results(job_id:str):
 
     job_data = get_job_by_id(job_id)
 
+    path = f'/app/{job_id}.png'
+
     if type(job_data) is str:
         logging.error("Job not found. Use the '/jobs' route for a list of valid jobs created.\n")
         return []
@@ -519,7 +521,7 @@ def get_results(job_id:str):
 
     
     with open(path, 'wb') as f:
-        f.write(res.hget(jobid, 'image'))
+        f.write(res.hget(job_id, 'image'))
 
         return send_file(path, mimetype='image/png', as_attachment=True)
 

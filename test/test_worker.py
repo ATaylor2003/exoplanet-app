@@ -24,7 +24,7 @@ def test_jobs_and_worker():
     assert isinstance(job_id_response.json(), dict) == True
 
     assert results_response.status_code == 200
-    #assert isinstance(results_response.json(), dict) == True # check response type
+    assert b'PNG' in results_response.content
 
     assert invalid_job_id_response.status_code == 200
     assert invalid_job_id_response.json() == {}

@@ -5,6 +5,7 @@ metadata:
   name: test-flask-api-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300s"
 spec:
   ingressClassName: nginx
   rules:

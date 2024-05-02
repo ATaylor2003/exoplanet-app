@@ -6,7 +6,7 @@ metadata:
   labels:
     app: worker
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: worker
@@ -16,16 +16,20 @@ spec:
         app: worker
     spec:
       containers:
-        - name: flask-api-container
-	  imagePullPolicy: IfNotPresent
-          image: <your-docker-image>:1.0 # Change line here once image is COMPLETE and uploaded to Dockerhub
-          ports:
-          - containerPort: 5000
-	  volumeMounts:
-	  - name: redis-data-pvc
-	    mountPath: "/data"
-	  command: ['sh', '-c', 'python3 worker.py']
+      - name: worker
+        imagePullPolicy: Always
+        image: lgonzalez883/planet_api:1.0
+        ports:
+        - name: http
+          containerPort: 6379
+        volumeMounts:
+        - name: redis-data-pvc
+          mountPath: "/data"
+        env:
+        - name: REDIS_IP
+          value: "redis-service"
+        command: ['sh', '-c', 'python3 worker.py']
       volumes:
       - name: redis-data-pvc
-	persistentVolumeClaim:
-	  claimName: redis-data-pvc
+        persistentVolumeClaim:
+          claimName: redis-data-pvc

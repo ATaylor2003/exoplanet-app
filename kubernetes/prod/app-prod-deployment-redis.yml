@@ -4,20 +4,21 @@ kind: Deployment
 metadata:
   name: redis-deployment
   labels:
-    app: redis
+    app: redis-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: redis-db
   template:
     metadata:
       labels:
-        app: redis
+        app: redis-db
     spec:
       containers:
-      - name: redis-container
-	imagePullPolicy: IfNotPresent
+      - name: redis-db
+        imagePullPolicy: Always
         image: redis:7
         ports:
-        - containerPort: 6379
+        - name: http
+          containerPort: 6379
