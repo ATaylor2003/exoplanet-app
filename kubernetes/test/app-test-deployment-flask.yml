@@ -16,16 +16,17 @@ spec:
         app: test-flask-api
     spec:
       containers:
-        - name: flask-api-container
-	  imagePullPolicy: Always
-          image: <your-flask-api-image>:dev # Change line here once image is uploaded to Dockerhub
-          ports:
-          - containerPort: 5000
-	  volumeMounts:
-	  - name: test-redis-data-pvc
-	    mountPath: "/data"
-	  command: ['sh', '-c', 'python3 flask-api.py']
+      - name: test-flask-api-container
+        imagePullPolicy: Always
+        image: lgonzalez883/planet_api:dev # Change line here once image is uploaded to Dockerhub
+        ports:
+        - name: http
+          containerPort: 5000
+        volumeMounts:
+        - name: test-redis-data-pvc
+          mountPath: "/data"
+        command: ['sh', '-c', 'python3 flask_api.py']
       volumes:
       - name: test-redis-data-pvc
-	persistentVolumeClaim:
-	  claimName: test-redis-data-pvc
+        persistentVolumeClaim:
+          claimName: test-redis-data-pvc
