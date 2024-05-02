@@ -41,7 +41,7 @@ route_details = {
                 "parameters": {
                     "data": "The data to be added."
                 },
-                "example": "/data (POST) -d 'data_content'"
+                "example": "/data (POST)"
             },
             "DELETE": {
                 "description": "Clear all data in the Redis database.",
@@ -62,7 +62,7 @@ route_details = {
             "GET": {
                 "description": "Retrieve a list of exoplanet IDs.",
                 "parameters": {},
-                "example": "/planets (GET)"
+                "example": "/planets"
             }
         }
     },
@@ -75,18 +75,20 @@ route_details = {
                 "parameters": {
                     "planet_id": "The ID of the exoplanet."
                 },
-                "example": "/planets/12345 (GET)"
+                "example": "/planets/12345"
             }
         }
-    }, # Unsure of usage for /filter and /search since they are not functioning currently
+    }, 
     "/planets/filter": {
         "description": "Retrieve and filter data based on criteria.",
         "methods": ["GET"],
         "usage": {
             "GET": {
                 "description": "Filter data based on criteria.",
-                "parameters": {},
-                "example": ""
+                "parameters": {
+                    "key=value": "The key in the data to filter by and a value to search for"
+                },
+                "example": "planets/filter?disc_facility=Xinglong%20Station"
             }
         }
     },
@@ -96,8 +98,23 @@ route_details = {
         "usage": {
             "GET": {
                 "description": "Search and retrieve data for specific exoplanets.",
-                "parameters": {},
-                "example": ""
+                "parameters": {
+                    "name=planet_name": "The name of the planet to search for (case insensitive)"
+                },
+                "example": "planets/search?name=kepler-1066%20b"
+            }
+        }
+    }, 
+    "/planets/advanced-filter": {
+        "description": "Retrieve and filter data based on multiple criteria.",
+        "methods": ["POST"],
+        "usage": {
+            "POST": {
+                "description": "Filter data based on multiple criteria.",
+                "parameters": {
+                    "{'filters': {'key1': 'value',...} "A json dictionary containing the keys to filter by and the values to search for"
+                },
+                "example": "planets/advanced-filter' -d '{'filters': {'discoverymethod': 'Transit'}}' -H 'Content-Type: application/json'"
             }
         }
     }, 
@@ -108,7 +125,7 @@ route_details = {
             "GET": {
                 "description": "Retrieve a list of star names.",
                 "parameters": {},
-                "example": "/stars (GET)"
+                "example": "/stars"
             }
         }
     },
@@ -121,20 +138,20 @@ route_details = {
                 "parameters": {
                     "star_id": "The name of the star."
                 },
-                "example": "/stars/Star1 (GET)"
+                "example": "/stars/Star1"
             }
         }
     },
     "/jobs": {
-        "description": "Submit new jobs for data plotting or retrieve a list of all created jobs.",
+        "description": "Submit new jobs for data plotting or retrieve a list of all created jobs. 'organize_by' is optional and options are 'Mass', 'Radius', and 'Orbit_Period'. Otherwise organize by year.",
         "methods": ["POST", "GET"],
         "usage": {
             "POST": {
                 "description": "Submit a new job for data plotting.",
                 "parameters": {
-                    "data": "The data to be plotted."
+                    "data": "The json dictionary that determines the data to plot."
                 },
-                "example": "/jobs (POST) -d 'plot_data'"
+                "example": "/jobs' -d '{'start_date': 2000, 'end_date': 2009, 'organize_by': 'Orbit_Period'}' -H 'Content-Type: application/json'"
             },
             "GET": {
                 "description": "Retrieve a list of all created jobs.",
@@ -152,7 +169,7 @@ route_details = {
                 "parameters": {
                     "job_id": "The ID of the job."
                 },
-                "example": "/jobs/54321 (GET)"
+                "example": "/jobs/54321"
             }
         }
     },
@@ -165,7 +182,7 @@ route_details = {
                 "parameters": {
                     "job_id": "The ID of the job."
                 },
-                "example": "/results/54321 (GET)"
+                "example": "/results/54321"
             }
         }
     }
