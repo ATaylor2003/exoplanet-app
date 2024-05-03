@@ -43,11 +43,29 @@ The Exoplanet Archive Database Application provides an app for retireving, parsi
 The data used in the application can be obtained from the [Planetary Systems Spreadsheet in the NASA Exoplanet Science Institute](https://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=PS). The data is downloaded in csv format.
 
 ### Deploying and Testing the Application Locally
+- run containers using `docker-compose up --build`
+
 
 ### Deploying and Testing using Kubernetes
+Using the command `kubectl apply -f <fileName>`:
+
+- Deploy the 3 services
+
+- Deploy the persistent volume claim
+
+- Deploy the ingress
+
+- Deploy the 3 deployments
+
+- confirm all services are up and pods are running on the same node
+
+- run `kubectl exec <flask-pod-name> pytest` to run test scripts
 
 ### Using the Application
 
 ### Using the Application with Public Endpoints
 
 ### Software Diagram
+
+This software diagram displays each component of the API as deployed through Kubernetes, including each container and service that runs in the api and the databases used. Arrows indicate a command used by the user, scripts, or kubernetes that get the docker images, transfer data to and from the redis databases, process that data, and display them in the user's terminal window.
+![](software_diagram.png "Software Diagram")
