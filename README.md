@@ -90,7 +90,7 @@ The main method of interaction with the application is through `curl` commands. 
     - `DELETE` - Delete all raw data stored in the redis database
 
 - `/planets`
-    - `GET` - Get a list of all planets within the redis database
+    - `GET` - Get a list of all planets within the redis database in json key format
 
 - `/planets/<planet_id>`
     - `GET` - Return the data associated with a given planet ID
@@ -122,6 +122,46 @@ The main method of interaction with the application is through `curl` commands. 
 - `/results/<job_id>`
     - `GET` - Return the image created from a given job ID once completed
         - Example: `/results/54321 -o output.png`
+
+Example Output (Output abridged)
+```bash
+[user-vm]/homework08$ curl localhost:5000/planets
+{
+"11 Com b"
+"11 UMi b"
+...
+"TOI-4145 A b"
+...
+}
+[user-vm]/homework08$ curl localhost:5000/planets/TOI-4145%AA%Ab
+{"pl_name": "TOI-4145 A b",
+"pl_letter": "b",
+"hostname": "TOI-4145 A",
+"hd_name": null,
+"hip_name": null,
+"tic_id": "TIC 279947414",
+"gaia_id": "Gaia DR2 568619413331898240",
+"default_flag": 0,
+"pl_refname": "<a refstr=EXOFOP_TESS_TOI href=https://exofop.ipac.caltech.edu/tess/view_toi.php target=ref>ExoFOP-TESS TOI</a>",
+"sy_refname": "<a refstr=STASSUN_ET_AL__2019 href=https://ui.adsabs.harvard.edu/abs/2019AJ....158..138S/abstract target=ref>TICv8</a>",
+"disc_pubdate": "2023-03",
+"disc_year": 2023,
+"discoverymethod": "Transit",
+"disc_locale": "Space",
+"disc_facility": "Transiting Exoplanet Survey Satellite (TESS)",
+"disc_instrument": "TESS CCD Array",
+"disc_telescope": "0.1 m TESS Telescope",
+"disc_refname": "<a refstr=YEE_ET_AL__2023 href=https://ui.adsabs.harvard.edu/abs/2023ApJS..265....1Y/abstract target=ref>Yee et al. 2023</a>",
+"ra": 39.4297435,
+"rastr": "02h37m43.14s",
+"dec": 80.2673838,
+"decstr": "+80d16m02.58s",
+"glon": 127.50137,
+"glat": 18.35224,
+"elon": 75.09100,
+...
+}
+```
 
 ### Using the Application Locally
 
