@@ -53,11 +53,10 @@ The test scripts can be run with the command:
 
 `docker exec <container-id> pytest`
 
-using the id of the flask container
+using the ID of the flask container.
 
 
 ## Deploying and Testing using Kubernetes
-Using the command `kubectl apply -f <fileName>`:
 
 This project also contains kubernetes files for deploying the app in either a production or test environment. Using the command:
 
@@ -82,7 +81,7 @@ Once all objects are running, public routes can be used with `curl` commands, an
 
 The main method of interaction with the application is through `curl` commands. These commands will be in the format `curl -X [TYPE] '<URL>'`, where `[TYPE]` is the type of request and `<URL>` is the URL which varies depending if the application is run locally or through a public endpoint. The following paths and request types are available in the application:
 
-` `/help`
+- `/help`
     - `GET` - Returns a dictionary, listing all routes and example usages
 
 - `/data`
